@@ -12,10 +12,12 @@ class Card():
 class Deck():
     
     suits = ['Hearts', 'Clubs', 'Diamonds', 'Spades']
-    values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'Jack', 'Queen', 'King', 'Ace']
-    _cards = []
+    ranks = ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Jack', 'Queen', 'King', 'Ace']
+    values = {'One': 1, 'Two': 2, 'Three': 3, 'Four': 4, 'Five': 5, 'Six': 6, 'Seven': 7, 'Eight': 8, 'Nine': 9, 'Jack': 10, 'Queen': 10, 'King': 10, 'Ace': 11}
     
     def __init__(self):
+        self._cards = []
+
         for suit in self.suits:
             for value in self.values:
                 self._cards.append(Card(suit, value))
@@ -45,3 +47,47 @@ class Deck():
         for card in self._cards:
             result = result + str(card) + '\n'
         return result
+
+class Hand():
+
+    def __init__(self):
+        self.cards = []
+        self.value = 0
+        self.aces = 0
+
+    def add_card(self, card):
+        self.cards.append(card)
+        self.value += Deck.values[card]
+
+        if card.value == 'Ace':
+            self.aces += 1
+
+    def adjust_for_aces(self):
+        while self.value > 21 and self.aces:
+            self.value -= 10
+            self.aces -= 1
+
+    def __str__(self):
+        result = ''
+
+        for card in self.cards:
+            result += f'{card}\n'
+
+        result += f'Total Value: {self.value}'
+
+        return result 
+
+class Chips():
+
+    def __init__(self):
+        self.value = 100
+        self.bet = 0
+
+    def win_bet(self):
+        self.value += self.bet
+
+    def lose_bet(self):
+        self.value -= self.bet
+
+    def __str__(self):
+        return str(self.value)
