@@ -5,7 +5,7 @@ Date: 5/18/17
 Description: Text based Blackjack game, where one player faces off against an AI-controlled dealer.
 '''
 #Import my classes from the playing_cards.py file.
-#import playing_cards
+import playing_cards
 
 # Player class
 # Needs a hand
@@ -30,7 +30,13 @@ Description: Text based Blackjack game, where one player faces off against an AI
 
 ################## Function Definitions ####################
 def place_bet(chips):
-    chips.bet = int(input('Player, place your bet: '))
+
+    while True:
+        try:
+            chips.bet = abs(int(input('Player, place your bet: ')))
+            break
+        except TypeError:
+            print('That is not a valid input! Please try again.\n')
     print('\n')
 
 def hit(hand, deck):
@@ -39,11 +45,19 @@ def hit(hand, deck):
 def hit_or_stand(deck, hand):
     global standing
     standing = False
+    player_choice = ''
 
-    if input('Player, do you want to Hit or Stand?: ') == 'Stand' or hand.value == 21:
-        standing = True
-    else:
-        hit(hand, deck)
+    while player_choice != 'stand' or player_choice != 'hit':
+
+        player_choice = input('Player, do you want to Hit or Stand?: ').lower()
+
+        if player_choice == 'stand':
+            standing = True
+        elif player_choice == 'hit':
+            hit(hand, deck)
+        else:
+            print('That is not a valid choice! Please try again.\n')
+
     print('\n')
 
 def show_some(player, dealer):
@@ -66,22 +80,22 @@ def show_all(player, dealer):
 
 def player_wins(chips):
     chips.win_bet()
-    print('Congratulations! You have beaten the dealer!')
+    print('Congratulations! You have beaten the dealer!\n')
 
 def player_busts(chips):
     chips.lose_bet()
-    print('You have busted!')
+    print('You have busted!\n')
 
 def dealer_busts(chips):
     chips.win_bet()
-    print('The dealer has busted! You win!')
+    print('The dealer has busted! You win!\n')
 
 def dealer_wins(chips):
     chips.lose_bet()
-    print('The dealer has beaten you!')
+    print('The dealer has beaten you!\n')
 
 def push():
-    print('This match is a draw!')
+    print('This match is a draw!\n')
 
 def play_again():
     return input('Would you like to play again? y/n: ').lower() == 'y'
@@ -166,7 +180,7 @@ while True:
         push()
 
     # Print the player's chip total.
-    print(f'Your final chip total is {player_chips}.')
+    print(f'Your final chip total is {player_chips}.\n')
 
     # Play again?
     if not play_again():
