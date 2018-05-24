@@ -5,7 +5,7 @@ Date: 5/18/17
 Description: Text based Blackjack game, where one player faces off against an AI-controlled dealer.
 '''
 #Import my classes from the playing_cards.py file.
-import playing_cards
+#import playing_cards
 
 # Player class
 # Needs a hand
@@ -29,8 +29,9 @@ import playing_cards
 # Needs to be able to be drawn from
 
 ################## Function Definitions ####################
-def place_bet():
-    player.bet = int(input('Player, place your bet: '))
+def place_bet(chips):
+    chips.bet = int(input('Player, place your bet: '))
+    print('\n')
 
 def hit(hand, deck):
     hand.add_card(deck.draw())
@@ -39,26 +40,29 @@ def hit_or_stand(deck, hand):
     global standing
     standing = False
 
-    if input('Player, do you want to Hit or Stand?: ') == 'Stand':
+    if input('Player, do you want to Hit or Stand?: ') == 'Stand' or hand.value == 21:
         standing = True
     else:
         hit(hand, deck)
+    print('\n')
 
 def show_some(player, dealer):
     print("Dealer's Hand:")
     print(f'{dealer.cards[0]}')
     print('???')
-    print(f'Total Value: {dealer.cards[0].value}')
-    print('\n\n')
+    print(f'Total Value: {Deck.values[dealer.cards[0].rank]}')
+    print('\n')
     print("Player's Hand:")
-    print(f'player')
+    print(f'{player}')
+    print('\n')
 
 def show_all(player, dealer):
     print("Dealer's Hand:")
     print(f'{dealer}')
-    print('\n\n')
+    print('\n')
     print("Player's Hand:")
-    print(f'player')
+    print(f'{player}')
+    print('\n')
 
 def player_wins(chips):
     chips.win_bet()
@@ -80,7 +84,7 @@ def push():
     print('This match is a draw!')
 
 def play_again():
-    return input('Would you like to play again? y/n: ').lower == 'y'
+    return input('Would you like to play again? y/n: ').lower() == 'y'
 
 ################## Get Objects Ready #######################
 # Player
@@ -96,72 +100,70 @@ deck = Deck()
 ################# Game Starts Here ###########################
 # Infinite game loop.
 while True:
-    
-    # Until the player doesn't want to play again.
-    while True:
-        # Shuffle the deck.
-        deck.reload()
-        deck.shuffle()
+    # Shuffle the deck.
+    deck.reload()
+    deck.deck_shuffle()
 
-        # Player places a bet.
-        place_bet()
+    # Reset the hands.
+    player.clear_hand()
+    dealer.clear_hand()
 
-        # Player gets one Card from the Deck, face up.
-        hit(player, deck)
+    # Player is not standing.
+    standing = False
 
-        # Dealer gets one Card from the Deck, face up.
-        hit(dealer, deck)
+    # Player places a bet.
+    place_bet(player_chips)
 
-        # Player gets one Card from the Deck, face up.
-        hit(player, deck)
+    # Player gets one Card from the Deck, face up.
+    hit(player, deck)
 
-        # Dealer gets one Card from the Deck, face down
-        hit(dealer, deck)
+    # Dealer gets one Card from the Deck, face up.
+    hit(dealer, deck)
+
+    # Player gets one Card from the Deck, face up.
+    hit(player, deck)
+
+    # Dealer gets one Card from the Deck, face down
+    hit(dealer, deck)
+
+    # Display cards, and calculate totals.
+    show_some(player, dealer)
+
+    # Is there a NATURAL?
+    if player.value == 21:
+        player_wins(player_chips)
+        standing = True
+
+    ################### Player's Turn ########################
+    while not standing and player.value < 21:
+
+        # Player chooses to hit, or stay.
+        hit_or_stand(deck, player)
+        
+        # Adjust for aces.
+        player.adjust_for_aces()
 
         # Display cards, and calculate totals.
         show_some(player, dealer)
 
-        # Is there a NATURAL?
-        if player.value == 21:
-            player_wins(player_chips)
-            break
+    ################### Player's Turn ########################
+    while dealer.value < 17 and player.value <= 21 and not standing:
+        #The dealer hits.
+        hit(dealer, deck)
 
-        ################### Player's Turn ########################
-        while standing:
+    #Show all cards.
+    show_all(player, dealer)
 
-            # Player chooses to hit, or stay.
-            hit_or_stand(deck, player)
-            
-            # Adjust for aces.
-            player.adjust_for_aces()
-
-            # Display cards, and calculate totals.
-            show_some(player, dealer)
-
-        ################### Player's Turn ########################
-        while dealer.value < 17 and player.value <= 21
-            #The dealer hits.
-            hit(dealer, deck)
-
-        #Show all cards.
-        show_all(player, dealer)
-
-        if dealer.value > 21:
-            dealer_busts(player_chips)
-            break
-        elif player.value > 21:
-            player_busts(player_chips)
-            break
-        elif dealer.value > player.value:
-            dealer_wins(player_chips)
-            break
-        elif dealer.value < player.value:
-            player_wins(player_chips)
-            break
-        elif dealer.value == player.value:
-            push()
-            break
-
+    if dealer.value > 21:
+        dealer_busts(player_chips)
+    elif player.value > 21:
+        player_busts(player_chips)
+    elif dealer.value > player.value:
+        dealer_wins(player_chips)
+    elif dealer.value < player.value:
+        player_wins(player_chips)
+    elif dealer.value == player.value:
+        push()
 
     # Print the player's chip total.
     print(f'Your final chip total is {player_chips}.')

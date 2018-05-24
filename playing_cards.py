@@ -2,12 +2,12 @@ from random import shuffle
 
 class Card():
     
-    def __init__(self, suit, value):
+    def __init__(self, suit, rank):
         self.suit = suit
-        self.value = value
+        self.rank = rank
         
     def __str__(self):
-        return f'{self.value} of {self.suit}'
+        return f'{self.rank} of {self.suit}'
 
 class Deck():
     
@@ -19,8 +19,8 @@ class Deck():
         self._cards = []
 
         for suit in self.suits:
-            for value in self.values:
-                self._cards.append(Card(suit, value))
+            for rank in self.ranks:
+                self._cards.append(Card(suit, rank))
                 
     def draw(self):
         if not self.is_empty():
@@ -35,8 +35,8 @@ class Deck():
         self._cards.clear()
         
         for suit in self.suits:
-            for value in self.values:
-                self._cards.append(Card(suit, value))
+            for rank in self.ranks:
+                self._cards.append(Card(suit, rank))
                 
     def is_empty(self):
         return len(self._cards) == 0
@@ -57,15 +57,20 @@ class Hand():
 
     def add_card(self, card):
         self.cards.append(card)
-        self.value += Deck.values[card]
+        self.value += Deck.values[card.rank]
 
-        if card.value == 'Ace':
+        if card.rank == 'Ace':
             self.aces += 1
 
     def adjust_for_aces(self):
         while self.value > 21 and self.aces:
             self.value -= 10
             self.aces -= 1
+
+    def clear_hand(self):
+        self.cards = []
+        self.value = 0
+        self.aces = 0
 
     def __str__(self):
         result = ''
