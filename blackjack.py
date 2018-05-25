@@ -5,7 +5,7 @@ Date: 5/18/17
 Description: Text based Blackjack game, where one player faces off against an AI-controlled dealer.
 '''
 #Import my classes from the playing_cards.py file.
-import playing_cards
+from playing_cards import *
 
 # Player class
 # Needs a hand
@@ -35,8 +35,8 @@ def place_bet(chips):
         try:
             chips.bet = abs(int(input('Player, place your bet: ')))
             break
-        except TypeError:
-            print('That is not a valid input! Please try again.\n')
+        except ValueError:
+            print('\nThat is not a valid input! Please try again.\n')
     print('\n')
 
 def hit(hand, deck):
@@ -47,7 +47,7 @@ def hit_or_stand(deck, hand):
     standing = False
     player_choice = ''
 
-    while player_choice != 'stand' or player_choice != 'hit':
+    while player_choice != 'stand' and player_choice != 'hit':
 
         player_choice = input('Player, do you want to Hit or Stand?: ').lower()
 
@@ -56,7 +56,7 @@ def hit_or_stand(deck, hand):
         elif player_choice == 'hit':
             hit(hand, deck)
         else:
-            print('That is not a valid choice! Please try again.\n')
+            print('\nThat is not a valid choice! Please try again.\n')
 
     print('\n')
 
@@ -125,6 +125,9 @@ while True:
     # Player is not standing.
     standing = False
 
+    # Check for a natural.
+    natural = False
+
     # Player places a bet.
     place_bet(player_chips)
 
@@ -140,16 +143,16 @@ while True:
     # Dealer gets one Card from the Deck, face down
     hit(dealer, deck)
 
-    # Display cards, and calculate totals.
-    show_some(player, dealer)
-
     # Is there a NATURAL?
     if player.value == 21:
         player_wins(player_chips)
-        standing = True
+        natural = True
 
     ################### Player's Turn ########################
     while not standing and player.value < 21:
+
+        # Display cards, and calculate totals.
+        show_some(player, dealer)
 
         # Player chooses to hit, or stay.
         hit_or_stand(deck, player)
@@ -157,11 +160,8 @@ while True:
         # Adjust for aces.
         player.adjust_for_aces()
 
-        # Display cards, and calculate totals.
-        show_some(player, dealer)
-
     ################### Player's Turn ########################
-    while dealer.value < 17 and player.value <= 21 and not standing:
+    while dealer.value < 17 and player.value <= 21 and not natural:
         #The dealer hits.
         hit(dealer, deck)
 
@@ -185,3 +185,5 @@ while True:
     # Play again?
     if not play_again():
         break
+
+    print('\n')
