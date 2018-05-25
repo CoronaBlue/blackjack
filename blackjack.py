@@ -7,66 +7,51 @@ Description: Text based Blackjack game, where one player faces off against an AI
 #Import my classes from the playing_cards.py file.
 from playing_cards import *
 
-# Player class
-# Needs a hand
-# Needs a bankroll
-# Needs to be able to bet
-# Needs to be able to draw
-# Needs to be able to stay
-
-# Dealer class
-# Needs a hand
-# Needs to be able to draw
-
-# Card class
-# Needs a suit
-# Needs a value
-# Needs to be able to flip
-
-# Deck Class
-# Needs 52 Cards
-# Needs to be able to shuffle
-# Needs to be able to be drawn from
-
 ################## Function Definitions ####################
 def place_bet(chips):
 
     while True:
         try:
             chips.bet = abs(int(input('Player, place your bet: ')))
-            break
         except ValueError:
             print('\nThat is not a valid input! Please try again.\n')
+        else:
+            if chips.bet > chips.value:
+                print("Sorry, you don't have that many chips. Please try again.\n")
+            elif chips.bet < 0:
+                print("Please enter a positive integer!\n")
+            else:
+                break
     print('\n')
 
 def hit(hand, deck):
     hand.add_card(deck.draw())
+    player.adjust_for_aces()
 
 def hit_or_stand(deck, hand):
     global standing
-    standing = False
-    player_choice = ''
 
-    while player_choice != 'stand' and player_choice != 'hit':
-
+    while True:
         player_choice = input('Player, do you want to Hit or Stand?: ').lower()
 
-        if player_choice == 'stand':
-            standing = True
-        elif player_choice == 'hit':
+        if player_choice[0] == 'h':
             hit(hand, deck)
+            break
+        elif player_choice[0] == 's':
+            print("\nThe player stands. It is now the dealer's turn.\n")
+            standing = True
+            break
         else:
-            print('\nThat is not a valid choice! Please try again.\n')
-
+            print('That is not a valid input. Please try again.\n')
     print('\n')
 
 def show_some(player, dealer):
-    print("Dealer's Hand:")
+    print("DEALER'S HAND:")
     print(f'{dealer.cards[0]}')
     print('???')
     print(f'Total Value: {Deck.values[dealer.cards[0].rank]}')
     print('\n')
-    print("Player's Hand:")
+    print("PLAYER'S HAND:")
     print(f'{player}')
     print('\n')
 
@@ -101,19 +86,22 @@ def play_again():
     return input('Would you like to play again? y/n: ').lower() == 'y'
 
 ################## Get Objects Ready #######################
-# Player
+# Instantiating the game objects.
 player = Hand()
-player_chips = Chips()
-
-# Dealer
 dealer = Hand()
-
-# Deck
+player_chips = Chips()
 deck = Deck()
 
 ################# Game Starts Here ###########################
 # Infinite game loop.
 while True:
+    # Player is not standing, and a natural hasn't been achieved.
+    standing = False
+    natural = False
+
+    # Opening statement.
+    print('\nWELCOME TO BLACKJACK!\n')
+
     # Shuffle the deck.
     deck.reload()
     deck.deck_shuffle()
@@ -122,25 +110,17 @@ while True:
     player.clear_hand()
     dealer.clear_hand()
 
-    # Player is not standing.
-    standing = False
-
-    # Check for a natural.
-    natural = False
-
     # Player places a bet.
-    place_bet(player_chips)
+    if player_chips.value > 0:
+        place_bet(player_chips)
+    else:
+        print("\nYou're out of chips! Get out of my casino!\n")
+        break
 
-    # Player gets one Card from the Deck, face up.
+    # Distribute cards, according to the rules of Blackjack.
     hit(player, deck)
-
-    # Dealer gets one Card from the Deck, face up.
     hit(dealer, deck)
-
-    # Player gets one Card from the Deck, face up.
     hit(player, deck)
-
-    # Dealer gets one Card from the Deck, face down
     hit(dealer, deck)
 
     # Is there a NATURAL?
@@ -149,25 +129,24 @@ while True:
         natural = True
 
     ################### Player's Turn ########################
-    while not standing and player.value < 21:
+    while not standing and player.value <= 21 and not natural:
 
         # Display cards, and calculate totals.
         show_some(player, dealer)
 
         # Player chooses to hit, or stay.
         hit_or_stand(deck, player)
-        
-        # Adjust for aces.
-        player.adjust_for_aces()
 
-    ################### Player's Turn ########################
-    while dealer.value < 17 and player.value <= 21 and not natural:
-        #The dealer hits.
-        hit(dealer, deck)
+    ################### Dealer's Turn ########################
+    if player.value <= 21 and not natural:
+        while dealer.value < 17:
+            #The dealer hits.
+            hit(dealer, deck)
 
-    #Show all cards.
+    # Show all cards.
     show_all(player, dealer)
 
+    # Determine end game condition.
     if dealer.value > 21:
         dealer_busts(player_chips)
     elif player.value > 21:
